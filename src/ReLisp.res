@@ -53,16 +53,18 @@ module Env = {
   }
 }
 
-let toMacro = ast =>
-  switch ast {
-  | ReLispFunction(f, _, meta) => ReLispFunction(f, true, meta)
-  | else_ => else_
-  }
+module Function = {
+  let toMacro = ast =>
+    switch ast {
+    | ReLispFunction(f, _, meta) => ReLispFunction(f, true, meta)
+    | else_ => else_
+    }
 
-let fromBootstrap = func => ReLispFunction(func, false, None)
+  let fromBootstrap = func => ReLispFunction(func, false, None)
 
-let fromLisp = (eval, env, params, body) => ReLispFunction(
-  args => eval(body, Env.new(Some(env), Env.dataFromLists(params, args))),
-  false,
-  None,
-)
+  let fromLisp = (eval, env, params, body) => ReLispFunction(
+    args => eval(body, Env.new(Some(env), Env.dataFromLists(params, args))),
+    false,
+    None,
+  )
+}
