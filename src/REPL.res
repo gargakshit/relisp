@@ -1,5 +1,3 @@
-open ReLisp
-
 let read = input => Reader.readStr(input)
 
 let eval = (~env=?, ast) =>
@@ -13,25 +11,10 @@ let eval = (~env=?, ast) =>
 let print = exp => Printer.printToString(exp)
 
 let rep = (input: string) => {
-  let env = Js.Dict.fromList(list{
-    (
-      "+",
-      Function.fromBootstrap(elems => ReLispNumber(
-        elems->Belt.Array.reduce(0.0, (acc, el) =>
-          switch el {
-          | ReLispNumber(num, _) => num +. acc
-          | _ => 0.0
-          }
-        ),
-        None,
-      )),
-    ),
-  })
-
   switch read(input) {
   | Error(e) => Error(e)
   | Ok(ast) =>
-    switch eval(ast, ~env) {
+    switch eval(ast, ~env=ReLispStdlib.stdlib) {
     | Error(e) => Error(e)
     | Ok(result) => Ok(print(result))
     }
