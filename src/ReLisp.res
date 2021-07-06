@@ -10,4 +10,3 @@ type rec t =
   // | ReLispHashMap()
   | ReLispFunction(ReLispFunction.t, option<t>)
   | ReLispAtom(t, option<t>)
-  | ReLispError(string, option<t>)
