@@ -3,7 +3,7 @@ open ReLisp
 @send
 external replaceWithFun: (string, Js.Re.t, (string, string) => string) => string = "replace"
 
-let tokenize = (input: string) => {
+let tokenize = input => {
   let regex = %re("/[\s,]*(~@|[\[\]{}()'`~^@]|\"(?:\\\.|[^\\\\\"])*\"?|;.*|[^\s\[\]{}('\"`,;)]*)/g")
 
   let rec recursiveTokenizer = tokens => {
@@ -38,14 +38,24 @@ let rec readForm = tokens => {
     let _ = Js.Array2.shift(tokens)
 
     let sym = ReLispSymbol(name, None)
-    let target = readForm(tokens)
 
-    ReLispList([sym, target], None)
+    switch readForm(tokens) {
+    | Error(e) => Error(e)
+    | Ok(target) => Ok(ReLispList([sym, target], None))
+    }
   }
 
   switch token {
-  | "(" => ReLispList([], None) // TODO
-  | "[" => ReLispVector([], None) // TODO
+  | "(" =>
+    switch readParen(tokens, "(", ")") {
+    | Error(e) => Error(e)
+    | Ok(list) => Ok(ReLispList(list, None))
+    }
+  | "[" =>
+    switch readParen(tokens, "[", "]") {
+    | Error(e) => Error(e)
+    | Ok(list) => Ok(ReLispVector(list, None))
+    }
   // | "{" => ReLispHashMap({}, None) TODO
   | "'" => readSymbol("quote")
   | "`" => readSymbol("quasiquote")
@@ -55,11 +65,21 @@ let rec readForm = tokens => {
       let _ = Js.Array2.shift(tokens)
 
       let sym = ReLispSymbol("with-meta", None)
-      let target = readForm(tokens)
 
-      ReLispList([sym, readForm(tokens), target], None)
+      switch readForm(tokens) {
+      | Error(e) => Error(e)
+      | Ok(target) =>
+        switch readForm(tokens) {
+        | Error(e) => Error(e)
+        | Ok(target2) => Ok(ReLispList([sym, target2, target], None))
+        }
+      }
     }
-  | _ => ReLispAtom(readAtom(tokens), None)
+  | _ =>
+    switch readAtom(tokens) {
+    | Error(e) => Error(e)
+    | Ok(atom) => Ok(ReLispAtom(atom, None))
+    }
   }
 }
 and readAtom = tokens => {
@@ -74,14 +94,14 @@ and readAtom = tokens => {
     | Some(n) => n
     }->Belt.Float.fromInt
 
-    ReLispNumber(num, None)
+    Ok(ReLispNumber(num, None))
   } else if %re("/^-?[0-9]\.[0-9]+$/")->Js.Re.test_(token) {
     let num = switch Belt.Float.fromString(token) {
     | None => 0.
     | Some(n) => n
     }
 
-    ReLispNumber(num, None)
+    Ok(ReLispNumber(num, None))
   } else if %re("/^\"(?:\\\.|[^\\\\\"])*\"$/")->Js.Re.test_(token) {
     let str =
       token
@@ -93,17 +113,47 @@ and readAtom = tokens => {
         }
       )
 
-    ReLispString(str, None)
+    Ok(ReLispString(str, None))
   } else if token->Js.String2.charAt(0) == "\"" {
-    ReLispError("Expected \", got EOF", None)
+    Error("Expected \", got EOF")
   } else if token->Js.String2.charAt(0) == ":" {
-    ReLispKeyword(token->Js.String2.substr(~from=1), None)
+    Ok(ReLispKeyword(token->Js.String2.substr(~from=1), None))
   } else {
-    switch token {
-    | "nil" => ReLispNil(None)
-    | "true" => ReLispBoolean(true, None)
-    | "false" => ReLispBoolean(false, None)
-    | _ => ReLispSymbol(token, None)
-    }
+    Ok(
+      switch token {
+      | "nil" => ReLispNil(None)
+      | "true" => ReLispBoolean(true, None)
+      | "false" => ReLispBoolean(false, None)
+      | _ => ReLispSymbol(token, None)
+      },
+    )
+  }
+}
+and readParen = (tokens, open_, close) => {
+  let token = switch Js.Array2.shift(tokens) {
+  | None => open_ // Should not happen I guess
+  | Some(t) => t
+  }
+
+  if token != open_ {
+    Error(`Unexpected token ${token}, expected ${open_}`)
+  } else {
+    let rec recursiveReader = arr =>
+      if tokens[0] == close {
+        Ok(arr)
+      } else {
+        switch readForm(tokens) {
+        | Error(e) => Error(e)
+        | Ok(target) => {
+            let _ = arr->Js.Array2.push(target)
+            recursiveReader(arr)
+          }
+        }
+      }
+
+    let list = recursiveReader([])
+    let _ = Js.Array2.shift(tokens)
+
+    list
   }
 }
