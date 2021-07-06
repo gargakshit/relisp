@@ -1,6 +1,7 @@
 let read = (input: string) => input
 
-let eval = (~env=?, ast) => ast
+// let eval = (~env=?, ast) => ast
+let eval = ast => ast
 
 let print = exp => exp
 

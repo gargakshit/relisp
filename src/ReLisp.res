@@ -1,0 +1,13 @@
+type rec t =
+  | ReLispList(array<t>, option<t>)
+  | ReLispNumber(float, option<t>)
+  | ReLispString(string, option<t>)
+  | ReLispNil(option<t>)
+  | ReLispBoolean(bool, option<t>)
+  | ReLispSymbol(string, option<t>)
+  | ReLispKeyword(string, option<t>)
+  | ReLispVector(array<t>, option<t>)
+  // | ReLispHashMap()
+  | ReLispFunction(ReLispFunction.t, option<t>)
+  | ReLispAtom(t, option<t>)
+  | ReLispError(string, option<t>)
