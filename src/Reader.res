@@ -78,7 +78,7 @@ let rec readForm = tokens => {
   | _ =>
     switch readAtom(tokens) {
     | Error(e) => Error(e)
-    | Ok(atom) => Ok(ReLispAtom(atom, None))
+    | Ok(atom) => Ok(atom)
     }
   }
 }
@@ -157,3 +157,5 @@ and readParen = (tokens, open_, close) => {
     list
   }
 }
+
+let readStr = input => input->tokenize->readForm
