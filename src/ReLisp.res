@@ -98,7 +98,11 @@ module Function = {
   let fromBootstrap = func => ReLispFunction(func, false, None)
 
   let fromLisp = (eval, env, params, body) => ReLispFunction(
-    args => eval(body, Env.new(Some(env), Env.dataFromLists(params, args))),
+    args =>
+      switch eval(body, Env.new(Some(env), Env.dataFromLists(params, args))) {
+      | Error(e) => ReLispError(e, None)
+      | Ok(e) => e
+      },
     false,
     None,
   )

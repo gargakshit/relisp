@@ -138,21 +138,7 @@ and evalReLisp = (ast, env) =>
           let getFun = args =>
             switch list->Belt.Array.get(2) {
             | None => Error("No function body present")
-            | Some(body) =>
-              Ok(
-                Function.fromBootstrap(fnArgs =>
-                  switch evalReLisp(
-                    body,
-                    Env.new(
-                      Some(env),
-                      Js.Dict.fromArray(args->Js.Array2.mapi((arg, i) => (arg, fnArgs[i]))),
-                    ),
-                  ) {
-                  | Error(e) => ReLispError(e, None)
-                  | Ok(e) => e
-                  }
-                ),
-              )
+            | Some(body) => Ok(Function.fromLisp(evalReLisp, env, args, body))
             }
 
           switch list->Belt.Array.get(1) {
