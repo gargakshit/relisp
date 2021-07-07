@@ -55,7 +55,7 @@ module Env = {
   }
 
   let set = (env, key, value) => {
-    env->Js.Dict.set(key, value)
+    env.data->Js.Dict.set(key, value)
     value
   }
 
