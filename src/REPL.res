@@ -1,22 +1,31 @@
 let read = input => Reader.readStr(input)
 
-let eval = (~env=?, ast) =>
-  ast->Eval.evalReLisp(
-    switch env {
-    | None => ReLisp.Env.new(None, Js.Dict.empty())
-    | Some(e) => e
-    },
-  )
+let initEnv = ReLisp.Env.new(None, ReLispStdlib.stdlib)
+
+let eval = (~env=initEnv, ast) => ast->Eval.evalReLisp(env)
 
 let print = exp => Printer.printToString(exp)
 
-let rep = (input: string) => {
+let rep = input =>
   switch read(input) {
   | Error(e) => Error(e)
   | Ok(ast) =>
-    switch eval(ast, ~env=ReLisp.Env.new(None, ReLispStdlib.stdlib)) {
+    switch eval(ast) {
     | Error(e) => Error(e)
     | Ok(result) => Ok(print(result))
     }
   }
-}
+
+let rec repl = (~env=initEnv, input, results) =>
+  switch Js.Array2.shift(input) {
+  | None => Ok(results)
+  | Some(inp) =>
+    switch read(inp) {
+    | Error(e) => Error(e)
+    | Ok(ast) =>
+      switch eval(ast) {
+      | Error(e) => Error(e)
+      | Ok(result) => input->repl(Belt.Array.concat(results, [print(result)]), ~env)
+      }
+    }
+  }
