@@ -21,7 +21,10 @@ let rec printToString = input =>
     ->Js.Dict.entries
     ->Js.Array2.map(((key, val)) => ":" ++ key ++ " " ++ printToString(val))
     ->Js.Array2.joinWith(" ") ++
-    if h.keywordMap->Js.Dict.values->Js.Array2.length == 0 {
+    if (
+      h.stringMap->Js.Dict.values->Js.Array2.length == 0 ||
+        h.keywordMap->Js.Dict.values->Js.Array2.length == 0
+    ) {
       ""
     } else {
       " "
