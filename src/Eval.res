@@ -86,6 +86,18 @@ and evalReLisp = (ast, env) =>
             }
           }
         }
+      | ReLispSymbol("do", None) => {
+          let astList = list->Js.Array.slice(~start=1, ~end_=list->Js.Array2.length)
+          switch evalAst(ReLispList(astList, None), env) {
+          | Error(e) => Error(e)
+          | Ok(v) =>
+            switch v {
+            | ReLispList(val, _) => Ok(val[val->Js.Array2.length - 1])
+            | ReLispVector(val, _) => Ok(val[val->Js.Array2.length - 1])
+            | ret => Error(`Invalid type ${type_(ret)}, expected list or vector`)
+            }
+          }
+        }
       | _ =>
         switch evalAst(ast, env) {
         | Error(e) => Error(e)
