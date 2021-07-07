@@ -448,6 +448,20 @@ let leFun = elems => {
   }
 }
 
+let emptyFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispList(arr, _) => ReLispBoolean(Js.Array2.length(arr) == 0, None)
+    | ReLispVector(arr, _) => ReLispBoolean(Js.Array2.length(arr) == 0, None)
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected list or vector`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -474,6 +488,7 @@ let stdlib = Js.Dict.fromArray([
   ("vector?", isVector),
   ("hash-map", hashMapFun),
   ("map?", isHashMap),
+  ("empty?", emptyFun),
   ("count", countFun),
   (
     "=",
