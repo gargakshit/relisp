@@ -98,6 +98,24 @@ and evalReLisp = (ast, env) =>
             }
           }
         }
+      | ReLispSymbol("if", None) =>
+        switch list->Belt.Array.get(1) {
+        | None => Error("No condition present")
+        | Some(cond) =>
+          switch evalReLisp(cond, env) {
+          | Error(e) => Error(e)
+          | Ok(ReLispBoolean(true, None)) =>
+            switch list->Belt.Array.get(2) {
+            | None => Error("No then expression present")
+            | Some(thenExpr) => evalReLisp(thenExpr, env)
+            }
+          | Ok(_) =>
+            switch list->Belt.Array.get(3) {
+            | None => Ok(ReLispNil(None))
+            | Some(elseExpr) => evalReLisp(elseExpr, env)
+            }
+          }
+        }
       | _ =>
         switch evalAst(ast, env) {
         | Error(e) => Error(e)
