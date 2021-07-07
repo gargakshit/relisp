@@ -21,11 +21,20 @@ type rec t =
   | ReLispAtom(t, option<t>)
   | ReLispError(string, option<t>)
   | ReLispHashMap(hashmap, option<t>)
-and f = array<t> => t
+and f = {
+  fun: array<t> => t,
+  ast: option<t>,
+  env: option<envT>,
+  params: array<Js.Dict.key>,
+}
 and envData = Js.Dict.t<t>
 and hashmap = {
   keywordMap: Js.Dict.t<t>,
   stringMap: Js.Dict.t<t>,
+}
+and envT = {
+  outer: option<envT>,
+  data: envData,
 }
 
 let type_ = elem =>
@@ -49,11 +58,6 @@ let type_ = elem =>
   }
 
 module Env = {
-  type rec t = {
-    outer: option<t>,
-    data: envData,
-  }
-
   let set = (env, key, value) => {
     env.data->Js.Dict.set(key, value)
     value
@@ -95,14 +99,23 @@ module Function = {
     | else_ => else_
     }
 
-  let fromBootstrap = func => ReLispFunction(func, false, None)
+  let fromBootstrap = func => ReLispFunction(
+    {fun: func, ast: None, env: None, params: []},
+    false,
+    None,
+  )
 
   let fromLisp = (eval, env, params, body) => ReLispFunction(
-    args =>
-      switch eval(body, Env.new(Some(env), Env.dataFromLists(params, args))) {
-      | Error(e) => ReLispError(e, None)
-      | Ok(e) => e
-      },
+    {
+      fun: args =>
+        switch eval(body, Env.new(Some(env), Env.dataFromLists(params, args))) {
+        | Error(e) => ReLispError(e, None)
+        | Ok(e) => e
+        },
+      ast: Some(body),
+      env: Some(env),
+      params: params,
+    },
     false,
     None,
   )

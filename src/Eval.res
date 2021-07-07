@@ -156,29 +156,48 @@ and evalReLisp = (ast, env) =>
           | Some(e) => Error(`Invalid type ${type_(e)}, expected a list or vector`)
           }
         }
-      | _ =>
-        switch evalAst(ast, env) {
-        | Error(e) => Error(e)
-        | Ok(result) =>
-          switch result {
-          | ReLispList(list, _) => evalFunc(list)
-          | ReLispVector(list, _) => evalFunc(list)
-          | _ => Error(`Unexpected return type TODO, expected list or vector`)
+      | _ => {
+          @inline
+          let evalFunc = list => {
+            let f = Js.Array2.shift(list)
+
+            switch f {
+            | None => Error("Undefined function")
+            | Some(ReLispFunction(fun, _, _)) =>
+              switch fun.ast {
+              | None => Ok(fun.fun(list))
+              | Some(ast) =>
+                evalReLisp(
+                  ast,
+                  Env.new(
+                    Some(
+                      switch fun.env {
+                      | None => env
+                      | Some(env) => env
+                      },
+                    ),
+                    Env.dataFromLists(fun.params, list),
+                  ),
+                )
+              }
+            | Some(other) => Ok(ReLispList([other]->Js.Array2.concat(list), None))
+            }
+          }
+
+          switch evalAst(ast, env) {
+          | Error(e) => Error(e)
+          | Ok(result) =>
+            switch result {
+            | ReLispList(list, _) => evalFunc(list)
+            | ReLispVector(list, _) => evalFunc(list)
+            | _ => Error(`Unexpected return type TODO, expected list or vector`)
+            }
           }
         }
       }
     }
   | else_ => evalAst(else_, env)
   }
-and evalFunc = list => {
-  let f = Js.Array2.shift(list)
-
-  switch f {
-  | None => Error("Undefined function")
-  | Some(ReLispFunction(fun, _, _)) => Ok(fun(list))
-  | Some(other) => Ok(ReLispList([other]->Js.Array2.concat(list), None))
-  }
-}
 and evalList = (list, env, i, result) => {
   if i == Belt.Array.length(list) {
     Ok(result)
