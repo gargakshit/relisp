@@ -486,7 +486,6 @@ let readStringFun = Function.fromBootstrap(elems => {
   }
 })
 
-// TODO: add slurp
 let slurpFun = Function.fromBootstrap(elems => {
   let len = Belt.Array.length(elems)
 
@@ -517,6 +516,53 @@ let slurpFun = Function.fromBootstrap(elems => {
   }
 })
 
+let atomFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 => ReLispAtom(elems[0], None)
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isAtom = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispAtom(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let derefAtom = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispAtom(e, _) => e
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected atom`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+// Reset doesn't mutate the original atom as the language is immutable
+let resetFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 => ReLispAtom(elems[1], None)
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+// TODO: add swap
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -541,6 +587,10 @@ let stdlib = Js.Dict.fromArray([
   ("list?", isList),
   ("vector", vectorFun),
   ("vector?", isVector),
+  ("atom", atomFun),
+  ("atom?", isAtom),
+  ("deref", derefAtom),
+  ("reset!", resetFun),
   ("hash-map", hashMapFun),
   ("map?", isHashMap),
   ("empty?", emptyFun),

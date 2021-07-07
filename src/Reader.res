@@ -67,6 +67,7 @@ let rec readForm = tokens => {
   | "'" => readSymbol("quote")
   | "`" => readSymbol("quasiquote")
   | "~" => readSymbol("unquote")
+  | "@" => readSymbol("deref")
   | "~@" => readSymbol("splice-quote")
   | "^" => {
       let _ = Js.Array2.shift(tokens)
