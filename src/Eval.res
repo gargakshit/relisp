@@ -180,12 +180,11 @@ and evalReLisp = (ast, env) =>
   | else_ => evalAst(else_, env)
   }
 and evalFunc = list => {
-  let f = Belt.Array.get(list, 0)
+  let f = Js.Array2.shift(list)
 
   switch f {
   | None => Error("Undefined function")
-  | Some(ReLispFunction(fun, _, _)) =>
-    Ok(fun(list->Js.Array2.slice(~start=1, ~end_=list->Js.Array2.length)))
+  | Some(ReLispFunction(fun, _, _)) => Ok(fun(list))
   | Some(other) => Ok(ReLispList([other]->Js.Array2.concat(list), None))
   }
 }
