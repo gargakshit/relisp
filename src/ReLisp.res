@@ -9,7 +9,7 @@ type rec t =
   | ReLispVector(array<t>, option<t>)
   | ReLispFunction(f, bool, option<t>)
   | ReLispAtom(t, option<t>)
-// | ReLispHashMap()
+  | ReLispError(string, option<t>)
 and f = array<t> => t
 and envData = Js.Dict.t<t>
 
