@@ -563,6 +563,56 @@ let resetFun = Function.fromBootstrap(elems => {
 
 // TODO: add swap
 
+let nthFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[1] {
+    | ReLispNumber(nf, _) => {
+        let n = Belt.Float.toInt(nf)
+
+        @inline
+        let getEl = arr =>
+          switch arr->Belt.Array.get(n) {
+          | None => ReLispNil(None)
+          | Some(e) => e
+          }
+
+        switch elems[0] {
+        | ReLispList(arr, _) => getEl(arr)
+        | ReLispVector(arr, _) => getEl(arr)
+        | e => ReLispError(`Unexpected type ${type_(e)}, expected list or vector`, None)
+        }
+      }
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected number`, None)
+    }
+  | _ => ReLispError(`Expected 2 arguments, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let consFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[1] {
+    | ReLispList(arr, _) => ReLispList([elems[0]]->Belt.Array.concat(arr), None)
+    | ReLispVector(arr, _) => ReLispList([elems[0]]->Belt.Array.concat(arr), None)
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected list or vector`, None)
+    }
+  | _ => ReLispError(`Expected 2 arguments, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let concatFun = Function.fromBootstrap(elems => ReLispList(elems->Js.Array2.reduce((acc, el) =>
+    switch el {
+    | ReLispList(arr, _) => acc->Belt.Array.concat(arr)
+    | ReLispVector(arr, _) => acc->Belt.Array.concat(arr)
+    | _ => acc
+    }
+  , []), None))
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -597,6 +647,9 @@ let stdlib = Js.Dict.fromArray([
   ("count", countFun),
   ("read-string", readStringFun),
   ("slurp", slurpFun),
+  ("nth", nthFun),
+  ("cons", consFun),
+  ("concat", concatFun),
   (
     "is-browser",
     Function.fromBootstrap(elems => {
