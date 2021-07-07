@@ -3,7 +3,7 @@ open ReLisp
 let rec evalAst = (ast, env) => {
   switch ast {
   | ReLispSymbol(name, _) =>
-    switch env->Js.Dict.get(name) {
+    switch env->Env.get(name) {
     | None => Error(`Unknown Symbol: ${name}`)
     | Some(f) => Ok(f)
     }
