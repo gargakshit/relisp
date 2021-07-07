@@ -229,7 +229,7 @@ let isMacro = Function.fromBootstrap(elems => {
 })
 
 let strFun = Function.fromBootstrap(elems => ReLispString(
-  elems->Belt.Array.map(Printer.printToString)->Js.Array2.joinWith(" "),
+  elems->Belt.Array.map(Printer.printToString)->Js.Array2.joinWith(""),
   None,
 ))
 
