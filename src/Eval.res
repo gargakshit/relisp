@@ -44,7 +44,7 @@ and evalFunc = list => {
   switch f {
   | None => Error("Undefined function")
   | Some(ReLispFunction(fun, _, _)) => Ok(fun(list))
-  | Some(_) => Error("Unexpected type TODO, expected a function")
+  | Some(other) => Ok(ReLispList([other]->Js.Array2.concat(list), None))
   }
 }
 and evalList = (list, env, i, result) => {
