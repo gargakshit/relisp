@@ -378,7 +378,7 @@ let gtFun = elems => {
   | 2 =>
     switch elems[0] {
     | ReLispNumber(n1, _) =>
-      switch elems[2] {
+      switch elems[1] {
       | ReLispNumber(n2, _) => Ok(n1 > n2)
       | e => Error(`Invalid type ${type_(e)}, expected number`)
       }
@@ -395,7 +395,7 @@ let ltFun = elems => {
   | 2 =>
     switch elems[0] {
     | ReLispNumber(n1, _) =>
-      switch elems[2] {
+      switch elems[1] {
       | ReLispNumber(n2, _) => Ok(n1 < n2)
       | e => Error(`Invalid type ${type_(e)}, expected number`)
       }
@@ -412,7 +412,7 @@ let geFun = elems => {
   | 2 =>
     switch elems[0] {
     | ReLispNumber(n1, _) =>
-      switch elems[2] {
+      switch elems[1] {
       | ReLispNumber(n2, _) => Ok(n1 >= n2)
       | e => Error(`Invalid type ${type_(e)}, expected number`)
       }
@@ -429,7 +429,7 @@ let leFun = elems => {
   | 2 =>
     switch elems[0] {
     | ReLispNumber(n1, _) =>
-      switch elems[2] {
+      switch elems[1] {
       | ReLispNumber(n2, _) => Ok(n1 <= n2)
       | e => Error(`Invalid type ${type_(e)}, expected number`)
       }
