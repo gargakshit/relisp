@@ -1,5 +1,12 @@
 open ReLisp
 
+@inline
+let isBrowser = () =>
+  switch %external(__BROWSER__) {
+  | Some(true) => true
+  | _ => false
+  }
+
 let addFun = Function.fromBootstrap(elems => ReLispNumber(
   elems->Belt.Array.reduce(0.0, (acc, el) =>
     switch el {
@@ -480,6 +487,35 @@ let readStringFun = Function.fromBootstrap(elems => {
 })
 
 // TODO: add slurp
+let slurpFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  @inline
+  let performXhr = url => {
+    let xhrFun: string => option<string> = %raw(
+      // Can't use multiline, the formatter messes up
+      "function(url) { const xhr = new XMLHttpRequest(); xhr.open(\"GET\", url, false); xhr.send(); if (xhr.status == 200) { return xhr.responseText; } else { return undefined; } }"
+    )
+    xhrFun(url)
+  }
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispString(str, _) =>
+      if isBrowser() {
+        switch performXhr(str) {
+        | None => ReLispError(`Failed to slurp ${str}`, None)
+        | Some(s) => ReLispString(s, None)
+        }
+      } else {
+        ReLispString(Node.Fs.readFileSync(str, #utf8), None)
+      }
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected string`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
 
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
@@ -510,6 +546,18 @@ let stdlib = Js.Dict.fromArray([
   ("empty?", emptyFun),
   ("count", countFun),
   ("read-string", readStringFun),
+  ("slurp", slurpFun),
+  (
+    "is-browser",
+    Function.fromBootstrap(elems => {
+      let len = Belt.Array.length(elems)
+
+      switch len {
+      | 0 => ReLispBoolean(isBrowser(), None)
+      | _ => ReLispError(`Expected 0 arguments, got ${len->Belt.Int.toString}`, None)
+      }
+    }),
+  ),
   (
     "=",
     Function.fromBootstrap(elems =>

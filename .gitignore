@@ -31,3 +31,6 @@ lib/bs
 
 # Custom test suite using a reference version and the compiled rescript output
 /reftests/
+
+# Some random lispy lisp files
+*.relisp
