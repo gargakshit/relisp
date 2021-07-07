@@ -511,4 +511,15 @@ let stdlib = Js.Dict.fromArray([
       }
     ),
   ),
+  (
+    "time-ms",
+    Function.fromBootstrap(elems => {
+      let len = Belt.Array.length(elems)
+
+      switch len {
+      | 0 => ReLispNumber(Js.Date.now(), None)
+      | _ => ReLispError(`Expected 0 arguments, got ${len->Belt.Int.toString}`, None)
+      }
+    }),
+  ),
 ])
