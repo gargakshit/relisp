@@ -84,6 +84,160 @@ let typeFun = Function.fromBootstrap(elems => {
   }
 })
 
+let isNil = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispNil(_) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isTrue = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispBoolean(val, _) => ReLispBoolean(val, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isFalse = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispBoolean(val, _) => ReLispBoolean(!val, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isString = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispString(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isSymbol = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispSymbol(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let symbolFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispString(s, _) => ReLispSymbol(s, None)
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected string`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let keywordFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispString(s, _) => ReLispKeyword(s, None)
+    | ReLispKeyword(s, m) => ReLispKeyword(s, m)
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected string or keyword`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isKeyword = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispKeyword(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isNumber = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispNumber(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isFn = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispFunction(_, false, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isMacro = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispFunction(_, true, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let strFun = Function.fromBootstrap(elems => ReLispString(
+  elems->Belt.Array.map(Printer.printToString)->Js.Array2.joinWith(" "),
+  None,
+))
+
+let printFun = Function.fromBootstrap(elems => {
+  Js.Console.log(elems->Belt.Array.map(Printer.printToString)->Js.Array2.joinWith(" "))
+  ReLispNil(None)
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -91,4 +245,17 @@ let stdlib = Js.Dict.fromArray([
   ("/", divFun),
   ("typeof", typeFun),
   ("make-error", makeErrorFun),
+  ("nil?", isNil),
+  ("true?", isTrue),
+  ("false?", isFalse),
+  ("string?", isString),
+  ("symbol?", isSymbol),
+  ("symbol", symbolFun),
+  ("keyword", keywordFun),
+  ("keyword?", isKeyword),
+  ("number?", isNumber),
+  ("fn?", isFn),
+  ("macro?", isMacro),
+  ("str", strFun),
+  ("print", printFun),
 ])
