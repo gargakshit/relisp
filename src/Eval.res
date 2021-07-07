@@ -116,6 +116,55 @@ and evalReLisp = (ast, env) =>
             }
           }
         }
+      | ReLispSymbol("fn*", None) => {
+          let rec checkArgs = (~i=0, args, retArgs) =>
+            if i == Belt.Array.length(args) {
+              Ok(retArgs)
+            } else {
+              switch args[i] {
+              | ReLispSymbol(a, _) => {
+                  let _ = retArgs->Js.Array2.push(a)
+                  checkArgs(args, retArgs, ~i=i + 1)
+                }
+              | el => Error(`Invalid type ${type_(el)}, expected a symbol`)
+              }
+            }
+
+          let getFun = args =>
+            switch list->Belt.Array.get(2) {
+            | None => Error("No function body present")
+            | Some(body) =>
+              Ok(
+                Function.fromBootstrap(fnArgs =>
+                  switch evalReLisp(
+                    body,
+                    Env.new(
+                      Some(env),
+                      Js.Dict.fromArray(args->Js.Array2.mapi((arg, i) => (arg, fnArgs[i]))),
+                    ),
+                  ) {
+                  | Error(e) => ReLispError(e, None)
+                  | Ok(e) => e
+                  }
+                ),
+              )
+            }
+
+          switch list->Belt.Array.get(1) {
+          | None => Error("No args present")
+          | Some(ReLispList(args, _)) =>
+            switch checkArgs(args, []) {
+            | Error(e) => Error(e)
+            | Ok(e) => getFun(e)
+            }
+          | Some(ReLispVector(args, _)) =>
+            switch checkArgs(args, []) {
+            | Error(e) => Error(e)
+            | Ok(e) => getFun(e)
+            }
+          | Some(e) => Error(`Invalid type ${type_(e)}, expected a list or vector`)
+          }
+        }
       | _ =>
         switch evalAst(ast, env) {
         | Error(e) => Error(e)
