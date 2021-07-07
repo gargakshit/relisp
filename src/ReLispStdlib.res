@@ -238,6 +238,74 @@ let printFun = Function.fromBootstrap(elems => {
   ReLispNil(None)
 })
 
+let listFun = Function.fromBootstrap(elems => ReLispList(elems, None))
+
+let isList = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispVector(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let vectorFun = Function.fromBootstrap(elems => ReLispVector(elems, None))
+
+let isVector = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispVector(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let hashMapFun = Function.fromBootstrap(elems =>
+  switch HashMap.new(elems) {
+  | Ok(hashmap) => hashmap
+  | Error(e) => ReLispError(e, None)
+  }
+)
+
+let isHashMap = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispHashMap(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let countFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispList(arr, _) => {
+        Js.Console.log(Belt.Array.length(arr))
+        Js.Console.log(Printer.printToString(elems[0]))
+        ReLispNumber(Js.Array2.length(arr)->Belt.Int.toFloat, None)
+      }
+    | ReLispVector(arr, _) => ReLispNumber(Js.Array2.length(arr)->Belt.Int.toFloat, None)
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected list or vector`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -258,4 +326,11 @@ let stdlib = Js.Dict.fromArray([
   ("macro?", isMacro),
   ("str", strFun),
   ("print", printFun),
+  ("list", listFun),
+  ("list?", isList),
+  ("vector", vectorFun),
+  ("vector?", isVector),
+  ("hash-map", hashMapFun),
+  ("map?", isHashMap),
+  ("count", countFun),
 ])
