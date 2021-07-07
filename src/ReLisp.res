@@ -10,8 +10,13 @@ type rec t =
   | ReLispFunction(f, bool, option<t>)
   | ReLispAtom(t, option<t>)
   | ReLispError(string, option<t>)
+  | ReLispHashMap(hashmap, option<t>)
 and f = array<t> => t
 and envData = Js.Dict.t<t>
+and hashmap = {
+  keywordMap: Js.Dict.t<t>,
+  stringMap: Js.Dict.t<t>,
+}
 
 module Env = {
   type rec t = {
@@ -67,4 +72,49 @@ module Function = {
     false,
     None,
   )
+}
+
+module HashMap = {
+  let new = arr => {
+    let len = Belt.Array.length(arr)
+
+    if len->mod(2) == 0 {
+      let keywordMap = Js.Dict.empty()
+      let stringMap = Js.Dict.empty()
+      let chunks = arr->Utils.chunk(2)
+
+      let rec recursiveMapper = chunks =>
+        switch Js.Array2.shift(chunks) {
+        | None => Ok()
+        | Some(chunk) =>
+          switch chunk[0] {
+          | ReLispString(s, _) => {
+              stringMap->Js.Dict.set(s, chunk[1])
+              recursiveMapper(chunks)
+            }
+          | ReLispKeyword(s, _) => {
+              keywordMap->Js.Dict.set(s, chunk[1])
+              recursiveMapper(chunks)
+            }
+          | _ => Error("Invalid key type. Either string or keyword is accepted")
+          }
+        }
+
+      switch recursiveMapper(chunks) {
+      | Ok(_) =>
+        Ok(
+          ReLispHashMap(
+            {
+              keywordMap: keywordMap,
+              stringMap: stringMap,
+            },
+            None,
+          ),
+        )
+      | Error(e) => Error(e)
+      }
+    } else {
+      Error("All keys don't have a value")
+    }
+  }
 }

@@ -58,8 +58,10 @@ let divFun = Function.fromBootstrap(elems =>
 )
 // Not the most efficient, I know :)
 
-let typeFun = Function.fromBootstrap(elems =>
-  switch Belt.Array.length(elems) {
+let typeFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
   | 1 =>
     ReLispString(
       switch elems[0] {
@@ -78,16 +80,18 @@ let typeFun = Function.fromBootstrap(elems =>
         }
       | ReLispAtom(_, _) => "atom"
       | ReLispError(_, _) => "error"
+      | ReLispHashMap(_, _) => "hashmap"
       },
       None,
     )
-  | _ =>
-    ReLispError(`Expected 1 argument, got ${Belt.Array.length(elems)->Belt.Int.toString}`, None)
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
   }
-)
+})
 
-let makeErrorFun = Function.fromBootstrap(elems =>
-  switch Belt.Array.length(elems) {
+let makeErrorFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
   | 1 =>
     ReLispError(
       switch elems[0] {
@@ -97,10 +101,9 @@ let makeErrorFun = Function.fromBootstrap(elems =>
       },
       None,
     )
-  | _ =>
-    ReLispError(`Expected 1 argument, got ${Belt.Array.length(elems)->Belt.Int.toString}`, None)
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString} arguments`, None)
   }
-)
+})
 
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),

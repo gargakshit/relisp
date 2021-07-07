@@ -56,7 +56,11 @@ let rec readForm = tokens => {
     | Error(e) => Error(e)
     | Ok(list) => Ok(ReLispVector(list, None))
     }
-  // | "{" => ReLispHashMap({}, None) TODO
+  | "{" =>
+    switch readParen(tokens, "{", "}") {
+    | Error(e) => Error(e)
+    | Ok(list) => HashMap.new(list)
+    }
   | "'" => readSymbol("quote")
   | "`" => readSymbol("quasiquote")
   | "~" => readSymbol("unquote")
