@@ -1,3 +1,13 @@
+@val @scope("Object")
+external merge: (@as(json`{}`) _, Js.Dict.t<'a>, Js.Dict.t<'a>) => Js.Dict.t<'a> = "assign"
+
+let deleteFromMap = (dict, key) => {
+  let deleteFun: (Js.Dict.t<'a>, Js.Dict.key) => unit = %raw(
+    "function(map, key) { delete map[key]; }"
+  )
+  deleteFun(dict, key)
+}
+
 type rec t =
   | ReLispList(array<t>, option<t>)
   | ReLispNumber(float, option<t>)
@@ -17,6 +27,26 @@ and hashmap = {
   keywordMap: Js.Dict.t<t>,
   stringMap: Js.Dict.t<t>,
 }
+
+let type_ = elem =>
+  switch elem {
+  | ReLispList(_, _) => "list"
+  | ReLispNumber(_, _) => "number"
+  | ReLispString(_, _) => "string"
+  | ReLispNil(_) => "nil"
+  | ReLispBoolean(_, _) => "boolean"
+  | ReLispSymbol(_, _) => "symbol"
+  | ReLispKeyword(_, _) => "keyword"
+  | ReLispVector(_, _) => "vector"
+  | ReLispFunction(_, macro, _) =>
+    switch macro {
+    | false => "function"
+    | true => "macro"
+    }
+  | ReLispAtom(_, _) => "atom"
+  | ReLispError(_, _) => "error"
+  | ReLispHashMap(_, _) => "hashmap"
+  }
 
 module Env = {
   type rec t = {
@@ -117,4 +147,96 @@ module HashMap = {
       Error("All keys don't have a value")
     }
   }
+
+  let has = (hashmap, key) =>
+    switch key {
+    | ReLispKeyword(s, _) =>
+      switch hashmap.keywordMap->Js.Dict.get(s) {
+      | None => Ok(false)
+      | Some(_) => Ok(true)
+      }
+    | ReLispString(s, _) =>
+      switch hashmap.stringMap->Js.Dict.get(s) {
+      | None => Ok(false)
+      | Some(_) => Ok(true)
+      }
+    | _ => Error(`Unexpected type ${type_(key)}, expected string or keyword`)
+    }
+
+  let get = (hashmap, key) =>
+    switch key {
+    | ReLispKeyword(s, _) =>
+      switch hashmap.keywordMap->Js.Dict.get(s) {
+      | None => Ok(None)
+      | Some(e) => Ok(Some(e))
+      }
+    | ReLispString(s, _) =>
+      switch hashmap.stringMap->Js.Dict.get(s) {
+      | None => Ok(None)
+      | Some(e) => Ok(Some(e))
+      }
+    | _ => Error(`Unexpected type ${type_(key)}, expected string or keyword`)
+    }
+
+  let entries = hashmap =>
+    Js.Dict.entries(hashmap.keywordMap)
+    ->Js.Array2.map(((v1, v2)) => ReLispList([ReLispKeyword(v1, None), v2], None))
+    ->Js.Array2.concat(
+      Js.Dict.entries(hashmap.stringMap)->Js.Array2.map(((v1, v2)) => ReLispList(
+        [ReLispString(v1, None), v2],
+        None,
+      )),
+    )
+
+  let keys = hashmap =>
+    Js.Dict.keys(hashmap.keywordMap)
+    ->Js.Array2.map(key => ReLispKeyword(key, None))
+    ->Js.Array2.concat(
+      Js.Dict.keys(hashmap.stringMap)->Js.Array2.map(key => ReLispString(key, None)),
+    )
+
+  let values = hashmap =>
+    Js.Dict.values(hashmap.keywordMap)->Js.Array2.concat(Js.Dict.values(hashmap.stringMap))
+
+  let assoc = (hashmap, list) =>
+    switch new(list) {
+    | Error(e) => Error(e)
+    | Ok(newHashMap) =>
+      switch newHashMap {
+      | ReLispHashMap(newHashMap, _) =>
+        Ok({
+          keywordMap: merge(hashmap.keywordMap, newHashMap.keywordMap),
+          stringMap: merge(hashmap.stringMap, newHashMap.stringMap),
+        })
+      | _ => Error(`Invalid type ${type_(newHashMap)}, expected hashmap`) // Edge case, it won't happen (I guess)
+      }
+    }
+
+  let dissoc = (hashmap, list) =>
+    switch assoc(hashmap, list) {
+    | Error(e) => Error(e)
+    | Ok(newHashMap) => {
+        let rec recursiveForEach = list =>
+          switch Js.Array2.shift(list) {
+          | None => Ok()
+          | Some(lastElem) =>
+            switch lastElem {
+            | ReLispString(s, _) => {
+                deleteFromMap(newHashMap.stringMap, s)
+                recursiveForEach(list)
+              }
+            | ReLispKeyword(k, _) => {
+                deleteFromMap(newHashMap.keywordMap, k)
+                recursiveForEach(list)
+              }
+            | _ => Error(`Invalid type ${type_(lastElem)}, expected hashmap`)
+            }
+          }
+
+        switch recursiveForEach(list) {
+        | Error(e) => Error(e)
+        | Ok(_) => Ok(newHashMap)
+        }
+      }
+    }
 }
