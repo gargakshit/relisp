@@ -294,11 +294,7 @@ let countFun = Function.fromBootstrap(elems => {
   switch len {
   | 1 =>
     switch elems[0] {
-    | ReLispList(arr, _) => {
-        Js.Console.log(Belt.Array.length(arr))
-        Js.Console.log(Printer.printToString(elems[0]))
-        ReLispNumber(Js.Array2.length(arr)->Belt.Int.toFloat, None)
-      }
+    | ReLispList(arr, _) => ReLispNumber(Js.Array2.length(arr)->Belt.Int.toFloat, None)
     | ReLispVector(arr, _) => ReLispNumber(Js.Array2.length(arr)->Belt.Int.toFloat, None)
     | e => ReLispError(`Unexpected type ${type_(e)}, expected list or vector`, None)
     }
