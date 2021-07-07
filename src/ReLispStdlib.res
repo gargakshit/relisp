@@ -341,6 +341,11 @@ let eqFun = elems => {
       | ReLispSymbol(str2, _) => Ok(str1 == str2)
       | _ => Ok(false)
       }
+    | ReLispKeyword(str1, _) =>
+      switch elems[1] {
+      | ReLispKeyword(str2, _) => Ok(str1 == str2)
+      | _ => Ok(false)
+      }
     | ReLispVector(arr1, _) =>
       switch elems[1] {
       | ReLispList(arr2, _) => Ok(listEq(arr1, arr2))
@@ -365,7 +370,11 @@ let eqFun = elems => {
         )
       | _ => Ok(false)
       }
-    | _ => Ok(false)
+    | ReLispNil(_) =>
+      switch elems[1] {
+      | ReLispNil(_) => Ok(true)
+      | _ => Ok(false)
+      }
     }
   | _ => Error(`Expected 2 arguments, got ${len->Belt.Int.toString}`)
   }
