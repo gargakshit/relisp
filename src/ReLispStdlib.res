@@ -462,6 +462,25 @@ let emptyFun = Function.fromBootstrap(elems => {
   }
 })
 
+let readStringFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispString(str, _) =>
+      switch Reader.readStr(str) {
+      | Error(e) => ReLispError(e, None)
+      | Ok(e) => e
+      }
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected string`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+// TODO: add slurp
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -490,6 +509,7 @@ let stdlib = Js.Dict.fromArray([
   ("map?", isHashMap),
   ("empty?", emptyFun),
   ("count", countFun),
+  ("read-string", readStringFun),
   (
     "=",
     Function.fromBootstrap(elems =>
