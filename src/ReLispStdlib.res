@@ -302,6 +302,143 @@ let countFun = Function.fromBootstrap(elems => {
   }
 })
 
+let eqFun = elems => {
+  let len = Belt.Array.length(elems)
+
+  let listEq = (arr1, arr2) =>
+    if Js.Array2.length(arr1) == Js.Array2.length(arr2) {
+      arr1->Js.Array2.reducei((acc, el, i) => acc || el == arr2[i], false)
+    } else {
+      false
+    }
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispList(arr1, _) =>
+      switch elems[1] {
+      | ReLispList(arr2, _) => Ok(listEq(arr1, arr2))
+      | ReLispVector(arr2, _) => Ok(listEq(arr1, arr2))
+      | _ => Ok(false)
+      }
+    | ReLispNumber(num1, _) =>
+      switch elems[1] {
+      | ReLispNumber(num2, _) => Ok(num1 == num2)
+      | _ => Ok(false)
+      }
+    | ReLispString(str1, _) =>
+      switch elems[1] {
+      | ReLispString(str2, _) => Ok(str1 == str2)
+      | _ => Ok(false)
+      }
+    | ReLispBoolean(bool1, _) =>
+      switch elems[1] {
+      | ReLispBoolean(bool2, _) => Ok(bool1 == bool2)
+      | _ => Ok(false)
+      }
+    | ReLispSymbol(str1, _) =>
+      switch elems[1] {
+      | ReLispSymbol(str2, _) => Ok(str1 == str2)
+      | _ => Ok(false)
+      }
+    | ReLispVector(arr1, _) =>
+      switch elems[1] {
+      | ReLispList(arr2, _) => Ok(listEq(arr1, arr2))
+      | ReLispVector(arr2, _) => Ok(listEq(arr1, arr2))
+      | _ => Ok(false)
+      }
+    | ReLispFunction(_, _, _) => Ok(false)
+    | ReLispAtom(_, _) => Ok(false)
+    | ReLispError(e1, _) =>
+      switch elems[1] {
+      | ReLispError(e2, _) => Ok(e1 == e2)
+      | _ => Ok(false)
+      }
+    | ReLispHashMap(h1, _) =>
+      switch elems[1] {
+      | ReLispHashMap(h2, _) =>
+        Ok(
+          h1.keywordMap->Js.Dict.keys->listEq(h2.keywordMap->Js.Dict.keys) &&
+          h1.keywordMap->Js.Dict.values->listEq(h2.keywordMap->Js.Dict.values) &&
+          h1.stringMap->Js.Dict.keys->listEq(h2.stringMap->Js.Dict.keys) &&
+          h1.stringMap->Js.Dict.values->listEq(h2.stringMap->Js.Dict.values),
+        )
+      | _ => Ok(false)
+      }
+    | _ => Ok(false)
+    }
+  | _ => Error(`Expected 2 arguments, got ${len->Belt.Int.toString}`)
+  }
+}
+
+let gtFun = elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispNumber(n1, _) =>
+      switch elems[2] {
+      | ReLispNumber(n2, _) => Ok(n1 > n2)
+      | e => Error(`Invalid type ${type_(e)}, expected number`)
+      }
+    | e => Error(`Invalid type ${type_(e)}, expected number`)
+    }
+  | _ => Error(`Expected 2 arguments, got ${len->Belt.Int.toString}`)
+  }
+}
+
+let ltFun = elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispNumber(n1, _) =>
+      switch elems[2] {
+      | ReLispNumber(n2, _) => Ok(n1 < n2)
+      | e => Error(`Invalid type ${type_(e)}, expected number`)
+      }
+    | e => Error(`Invalid type ${type_(e)}, expected number`)
+    }
+  | _ => Error(`Expected 2 arguments, got ${len->Belt.Int.toString}`)
+  }
+}
+
+let geFun = elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispNumber(n1, _) =>
+      switch elems[2] {
+      | ReLispNumber(n2, _) => Ok(n1 >= n2)
+      | e => Error(`Invalid type ${type_(e)}, expected number`)
+      }
+    | e => Error(`Invalid type ${type_(e)}, expected number`)
+    }
+  | _ => Error(`Expected 2 arguments, got ${len->Belt.Int.toString}`)
+  }
+}
+
+let leFun = elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispNumber(n1, _) =>
+      switch elems[2] {
+      | ReLispNumber(n2, _) => Ok(n1 <= n2)
+      | e => Error(`Invalid type ${type_(e)}, expected number`)
+      }
+    | e => Error(`Invalid type ${type_(e)}, expected number`)
+    }
+  | _ => Error(`Expected 2 arguments, got ${len->Belt.Int.toString}`)
+  }
+}
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -329,4 +466,49 @@ let stdlib = Js.Dict.fromArray([
   ("hash-map", hashMapFun),
   ("map?", isHashMap),
   ("count", countFun),
+  (
+    "=",
+    Function.fromBootstrap(elems =>
+      switch eqFun(elems) {
+      | Ok(e) => ReLispBoolean(e, None)
+      | Error(e) => ReLispError(e, None)
+      }
+    ),
+  ),
+  (
+    ">",
+    Function.fromBootstrap(elems =>
+      switch gtFun(elems) {
+      | Ok(e) => ReLispBoolean(e, None)
+      | Error(e) => ReLispError(e, None)
+      }
+    ),
+  ),
+  (
+    ">=",
+    Function.fromBootstrap(elems =>
+      switch geFun(elems) {
+      | Ok(e) => ReLispBoolean(e, None)
+      | Error(e) => ReLispError(e, None)
+      }
+    ),
+  ),
+  (
+    "<",
+    Function.fromBootstrap(elems =>
+      switch ltFun(elems) {
+      | Ok(e) => ReLispBoolean(e, None)
+      | Error(e) => ReLispError(e, None)
+      }
+    ),
+  ),
+  (
+    "<=",
+    Function.fromBootstrap(elems =>
+      switch leFun(elems) {
+      | Ok(e) => ReLispBoolean(e, None)
+      | Error(e) => ReLispError(e, None)
+      }
+    ),
+  ),
 ])
