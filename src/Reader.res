@@ -46,16 +46,19 @@ let rec readForm = tokens => {
   }
 
   switch token {
+  | ")" => Error("Unexpected )")
   | "(" =>
     switch readParen(tokens, "(", ")") {
     | Error(e) => Error(e)
     | Ok(list) => Ok(ReLispList(list, None))
     }
+  | "]" => Error("Unexpected ]")
   | "[" =>
     switch readParen(tokens, "[", "]") {
     | Error(e) => Error(e)
     | Ok(list) => Ok(ReLispVector(list, None))
     }
+  | "}" => Error("Unexpected }")
   | "{" =>
     switch readParen(tokens, "{", "}") {
     | Error(e) => Error(e)
