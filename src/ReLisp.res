@@ -59,13 +59,13 @@ module Env = {
     value
   }
 
-  let find = (env, key) =>
+  let rec find = (env, key) =>
     switch env.data->Js.Dict.get(key) {
     | None =>
       switch env.outer {
       | None => None
       | Some(e) =>
-        switch e.data->Js.Dict.get(key) {
+        switch e->find(key) {
         | None => None
         | Some(_) => Some(e)
         }
