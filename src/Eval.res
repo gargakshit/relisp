@@ -156,6 +156,24 @@ and evalReLisp = (ast, env) =>
           | Some(e) => Error(`Invalid type ${type_(e)}, expected a list or vector`)
           }
         }
+      | ReLispSymbol("quote", None) =>
+        if Belt.Array.length(list) == 2 {
+          Ok(list[1])
+        } else {
+          Error(`Expected 0 arguments, got ${Belt.Array.length(list)->Belt.Int.toString}`)
+        }
+      | ReLispSymbol("quasiquote", None) =>
+        if Belt.Array.length(list) == 2 {
+          Ok(quasiQuote(list[1]))
+        } else {
+          Error(`Expected 0 arguments, got ${Belt.Array.length(list)->Belt.Int.toString}`)
+        }
+      | ReLispSymbol("quasiquoteexpand", None) =>
+        if Belt.Array.length(list) == 2 {
+          evalReLisp(list[1], env)
+        } else {
+          Error(`Expected 0 arguments, got ${Belt.Array.length(list)->Belt.Int.toString}`)
+        }
       | _ => {
           @inline
           let evalFunc = list => {
@@ -208,3 +226,18 @@ and evalList = (list, env, i, result) => {
     }
   }
 }
+and quasiQuote = ast =>
+  switch ast {
+  | ReLispSymbol(_, _) => ReLispList([ReLispSymbol("quote", None), ast], None)
+  | ReLispHashMap(_, _) => ReLispList([ReLispSymbol("quote", None), ast], None)
+  | ReLispList([ReLispSymbol("unquote", None), el1], _) => el1
+  | ReLispList(list, None) => qqFoldr(list)
+  | _ => ast
+  }
+and qqLoop = (el, acc) =>
+  switch el {
+  | ReLispList([ReLispSymbol("splice-unquote", None), el1], _) =>
+    ReLispList([ReLispSymbol("concat", None), el1, acc], None)
+  | _ => ReLispList([ReLispSymbol("cons", None), quasiQuote(el), acc], None)
+  }
+and qqFoldr = xs => xs->Js.Array2.reduceRight((acc, el) => qqLoop(el, acc), ReLispList([], None))
