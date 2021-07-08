@@ -235,10 +235,10 @@ and quasiQuote = ast =>
   | ReLispList(list, _) => qqFoldr(list)
   | _ => ast
   }
-and qqLoop = (el, acc) =>
+and qqLoop = (acc, el) =>
   switch el {
   | ReLispList([ReLispSymbol("splice-unquote", None), el1], _) =>
     ReLispList([ReLispSymbol("concat", None), el1, acc], None)
   | _ => ReLispList([ReLispSymbol("cons", None), quasiQuote(el), acc], None)
   }
-and qqFoldr = xs => xs->Js.Array2.reduceRight((acc, el) => qqLoop(el, acc), ReLispList([], None))
+and qqFoldr = xs => xs->Js.Array2.reduceRight(qqLoop, ReLispList([], None))
