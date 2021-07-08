@@ -636,6 +636,28 @@ let consFun = Function.fromBootstrap(elems => {
   }
 })
 
+let conjFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  if len >= 2 {
+    switch elems[0] {
+    | ReLispList(arr, _) => {
+        elems
+        ->Js.Array2.sliceFrom(1)
+        ->Js.Array2.forEach(elem => {
+          let _ = arr->Js.Array2.unshift(elem)
+        })
+        ReLispList(arr, None)
+      }
+    | ReLispVector(arr, _) =>
+      ReLispVector(arr->Js.Array2.concat(elems->Js.Array2.sliceFrom(1)), None)
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected list or vector`, None)
+    }
+  } else {
+    ReLispError(`Expected 2 or more arguments, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let concatFun = Function.fromBootstrap(elems => ReLispList(elems->Js.Array2.reduce((acc, el) =>
     switch el {
     | ReLispList(arr, _) => acc->Belt.Array.concat(arr)
@@ -751,6 +773,7 @@ let stdlib = Js.Dict.fromArray([
   ("slurp", slurpFun),
   ("nth", nthFun),
   ("cons", consFun),
+  ("conj", conjFun),
   ("concat", concatFun),
   ("vec", vecFun),
   ("first", firstFun),
