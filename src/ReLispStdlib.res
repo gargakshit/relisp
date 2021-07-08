@@ -253,7 +253,7 @@ let isList = Function.fromBootstrap(elems => {
   switch len {
   | 1 =>
     switch elems[0] {
-    | ReLispVector(_, _) => ReLispBoolean(true, None)
+    | ReLispList(_, _) => ReLispBoolean(true, None)
     | _ => ReLispBoolean(false, None)
     }
   | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
