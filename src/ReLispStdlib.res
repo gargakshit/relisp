@@ -642,12 +642,11 @@ let conjFun = Function.fromBootstrap(elems => {
   if len >= 2 {
     switch elems[0] {
     | ReLispList(arr, _) => {
-        elems
-        ->Js.Array2.sliceFrom(1)
-        ->Js.Array2.forEach(elem => {
-          let _ = arr->Js.Array2.unshift(elem)
-        })
-        ReLispList(arr, None)
+        let sliced = elems->Js.Array2.sliceFrom(1)
+        ReLispList(
+          sliced->Js.Array2.mapi((_, i) => sliced[len - i - 2])->Js.Array2.concat(arr),
+          None,
+        )
       }
     | ReLispVector(arr, _) =>
       ReLispVector(arr->Js.Array2.concat(elems->Js.Array2.sliceFrom(1)), None)
