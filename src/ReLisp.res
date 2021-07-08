@@ -71,7 +71,7 @@ module Env = {
       | Some(e) =>
         switch e->find(key) {
         | None => None
-        | Some(_) => Some(e)
+        | Some(e) => Some(e)
         }
       }
     | Some(_) => Some(env)
