@@ -617,6 +617,20 @@ let concatFun = Function.fromBootstrap(elems => ReLispList(elems->Js.Array2.redu
     }
   , []), None))
 
+let vecFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispList(arr, meta) => ReLispVector(arr, meta)
+    | ReLispVector(_, _) => elems[0]
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected list or vector`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -654,6 +668,7 @@ let stdlib = Js.Dict.fromArray([
   ("nth", nthFun),
   ("cons", consFun),
   ("concat", concatFun),
+  ("vec", vecFun),
   (
     "is-browser",
     Function.fromBootstrap(elems => {
