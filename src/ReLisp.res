@@ -87,7 +87,33 @@ module Env = {
 
   let dataFromLists = (keys, values) => {
     let dict = Js.Dict.empty()
-    keys->Belt.Array.forEachWithIndex((i, key) => dict->Js.Dict.set(key, values[i]))
+
+    let rec recursiveIterator = (keys, values, i) =>
+      if i == Belt.Array.length(keys) {
+        ()
+      } else {
+        let bind = keys[i]
+        let nextBind = Belt.Array.get(keys, i + 1)
+
+        if bind === "&" {
+          switch nextBind {
+          | None => ()
+          | Some(nextBind) => {
+              dict->Js.Dict.set(
+                nextBind,
+                ReLispList(values->Js.Array2.slice(~start=i, ~end_=Js.Array2.length(values)), None),
+              )
+              ()
+            }
+          }
+        } else {
+          Js.Dict.set(dict, bind, values[i])
+          recursiveIterator(keys, values, i + 1)
+        }
+      }
+
+    recursiveIterator(keys, values, 0)
+
     dict
   }
 }
