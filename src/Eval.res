@@ -198,7 +198,8 @@ and evalReLisp = (ast, env) =>
                   ),
                 )
               }
-            | Some(other) => Ok(ReLispList([other]->Js.Array2.concat(list), None))
+            // | Some(other) => Ok(ReLispList([other]->Js.Array2.concat(list), None))
+            | Some(other) => Error(`Undefined function ${Printer.printToString(other)}`)
             }
           }
 
