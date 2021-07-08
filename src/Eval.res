@@ -162,13 +162,13 @@ and evalReLisp = (ast, env) =>
         } else {
           Error(`Expected 0 arguments, got ${Belt.Array.length(list)->Belt.Int.toString}`)
         }
-      | ReLispSymbol("quasiquote", None) =>
+      | ReLispSymbol("quasiquoteexpand", None) =>
         if Belt.Array.length(list) == 2 {
           Ok(quasiQuote(list[1]))
         } else {
           Error(`Expected 0 arguments, got ${Belt.Array.length(list)->Belt.Int.toString}`)
         }
-      | ReLispSymbol("quasiquoteexpand", None) =>
+      | ReLispSymbol("quasiquote", None) =>
         if Belt.Array.length(list) == 2 {
           evalReLisp(list[1], env)
         } else {
