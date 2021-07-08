@@ -106,17 +106,17 @@ and evalReLisp = (ast, env) =>
           | Error(e) => Error(e)
           | Ok(ReLispBoolean(false, None)) =>
             switch list->Belt.Array.get(3) {
-            | None => Error("No then expression present")
+            | None => Ok(ReLispNil(None))
             | Some(thenExpr) => evalReLisp(thenExpr, env)
             }
           | Ok(ReLispNil(None)) =>
             switch list->Belt.Array.get(3) {
-            | None => Error("No then expression present")
+            | None => Ok(ReLispNil(None))
             | Some(thenExpr) => evalReLisp(thenExpr, env)
             }
           | Ok(_) =>
             switch list->Belt.Array.get(2) {
-            | None => Ok(ReLispNil(None))
+            | None => Error("No then expression present")
             | Some(elseExpr) => evalReLisp(elseExpr, env)
             }
           }
