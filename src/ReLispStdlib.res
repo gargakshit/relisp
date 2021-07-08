@@ -691,6 +691,23 @@ let restFun = Function.fromBootstrap(elems => {
   }
 })
 
+let applyFun = Function.fromBootstrap(elems =>
+  switch elems[0] {
+  | ReLispFunction(f, false, _) => {
+      let elem = elems[elems->Js.Array2.length - 1]
+
+      switch elem->isSeq {
+      | Some(list) => {
+          let args = elems->Js.Array2.slice(~start=0, ~end_=-1)->Js.Array2.concat(list)
+          f.fun(args)
+        }
+      | _ => ReLispError(`Unexpected type ${type_(elem)}, expected list or vector`, None)
+      }
+    }
+  | e => ReLispError(`Unexpected type ${type_(e)}, expected function`, None)
+  }
+)
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -732,6 +749,7 @@ let stdlib = Js.Dict.fromArray([
   ("vec", vecFun),
   ("first", firstFun),
   ("rest", restFun),
+  ("apply", applyFun),
   (
     "is-browser",
     Function.fromBootstrap(elems => {
