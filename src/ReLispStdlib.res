@@ -314,7 +314,11 @@ let eqFun = elems => {
 
   let listEq = (arr1, arr2) =>
     if Js.Array2.length(arr1) == Js.Array2.length(arr2) {
-      arr1->Js.Array2.reducei((acc, el, i) => acc || el == arr2[i], false)
+      if Js.Array2.length(arr1) == 0 {
+        true
+      } else {
+        arr1->Js.Array2.reducei((acc, el, i) => acc || el == arr2[i], false)
+      }
     } else {
       false
     }
