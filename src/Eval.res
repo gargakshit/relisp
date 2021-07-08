@@ -170,7 +170,7 @@ and evalReLisp = (ast, env) =>
         }
       | ReLispSymbol("quasiquote", None) =>
         if Belt.Array.length(list) == 2 {
-          evalReLisp(list[1], env)
+          evalReLisp(quasiQuote(list[1]), env)
         } else {
           Error(`Expected 0 arguments, got ${Belt.Array.length(list)->Belt.Int.toString}`)
         }
@@ -230,8 +230,8 @@ and quasiQuote = ast =>
   switch ast {
   | ReLispSymbol(_, _) => ReLispList([ReLispSymbol("quote", None), ast], None)
   | ReLispHashMap(_, _) => ReLispList([ReLispSymbol("quote", None), ast], None)
-  | ReLispList([ReLispSymbol("unquote", None), el1], _) => el1
-  | ReLispList(list, None) => qqFoldr(list)
+  | ReLispList([ReLispSymbol("unquote", _), el1], _) => el1
+  | ReLispList(list, _) => qqFoldr(list)
   | _ => ast
   }
 and qqLoop = (el, acc) =>
