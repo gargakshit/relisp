@@ -73,7 +73,7 @@ let divFun = Function.fromBootstrap(elems =>
 )
 // Not the most efficient, I know :)
 
-let makeErrorFun = Function.fromBootstrap(elems => {
+let errorFun = Function.fromBootstrap(elems => {
   let len = Belt.Array.length(elems)
 
   switch len {
@@ -95,6 +95,19 @@ let typeFun = Function.fromBootstrap(elems => {
 
   switch len {
   | 1 => ReLispString(type_(elems[0]), None)
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let isError = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispError(_, _) => ReLispBoolean(true, None)
+    | _ => ReLispBoolean(false, None)
+    }
   | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
   }
 })
@@ -684,7 +697,8 @@ let stdlib = Js.Dict.fromArray([
   ("*", mulFun),
   ("/", divFun),
   ("typeof", typeFun),
-  ("make-error", makeErrorFun),
+  ("error", errorFun),
+  ("error?", isError),
   ("nil?", isNil),
   ("true?", isTrue),
   ("false?", isFalse),

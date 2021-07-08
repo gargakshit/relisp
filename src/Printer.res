@@ -12,7 +12,8 @@ let rec printToString = input =>
   | ReLispKeyword(k, _) => ":" ++ k
   | ReLispVector(v, _) =>
     "[" ++ v->Belt.Array.map(e => printToString(e))->Belt.Array.joinWith(" ", e => e) ++ "]"
-  | ReLispFunction(_, _, _) => "#<function>"
+  | ReLispFunction(_, false, _) => "#<function>"
+  | ReLispFunction(_, true, _) => "#<macro>"
   | ReLispAtom(a, _) => "(atom " ++ printToString(a) ++ ")"
   | ReLispError(s, _) => "ERROR: " ++ s
   | ReLispHashMap(h, _) =>
