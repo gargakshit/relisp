@@ -1,6 +1,14 @@
 open ReLisp
 
 @inline
+let isSeq = val =>
+  switch val {
+  | ReLispList(list, _) => Some(list)
+  | ReLispVector(list, _) => Some(list)
+  | _ => None
+  }
+
+@inline
 let isBrowser = () =>
   switch %external(__BROWSER__) {
   | Some(true) => true
@@ -631,6 +639,45 @@ let vecFun = Function.fromBootstrap(elems => {
   }
 })
 
+let firstFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0]->isSeq {
+    | Some(list) =>
+      switch Belt.Array.get(list, 0) {
+      | None => ReLispNil(None)
+      | Some(e) => e
+      }
+    | _ => ReLispError(`Unexpected type ${type_(elems[0])}, expected list or vector`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
+let restFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0] {
+    | ReLispNil(_) => ReLispNil(None)
+    | _ =>
+      switch elems[0]->isSeq {
+      | Some(list) =>
+        switch Belt.Array.length(list) {
+        | 0 => ReLispNil(None)
+        | 1 => ReLispNil(None)
+        | _ => ReLispList(list->Js.Array2.slice(~start=1, ~end_=list->Js.Array2.length), None)
+        }
+      | _ => ReLispError(`Unexpected type ${type_(elems[0])}, expected list or vector`, None)
+      }
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -669,6 +716,8 @@ let stdlib = Js.Dict.fromArray([
   ("cons", consFun),
   ("concat", concatFun),
   ("vec", vecFun),
+  ("first", firstFun),
+  ("rest", restFun),
   (
     "is-browser",
     Function.fromBootstrap(elems => {
