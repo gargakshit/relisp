@@ -233,6 +233,7 @@ and quasiQuote = ast =>
   | ReLispHashMap(_, _) => ReLispList([ReLispSymbol("quote", None), ast], None)
   | ReLispList([ReLispSymbol("unquote", _), el1], _) => el1
   | ReLispList(list, _) => qqFoldr(list)
+  | ReLispVector(vec, _) => ReLispList([ReLispSymbol("vec", None), qqFoldr(vec)], None)
   | _ => ast
   }
 and qqLoop = (acc, el) =>
