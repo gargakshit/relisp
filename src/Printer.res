@@ -14,7 +14,7 @@ let rec printToString = input =>
     "[" ++ v->Belt.Array.map(e => printToString(e))->Belt.Array.joinWith(" ", e => e) ++ "]"
   | ReLispFunction(_, false, _) => "#<function>"
   | ReLispFunction(_, true, _) => "#<macro>"
-  | ReLispAtom(a, _) => "(atom " ++ printToString(a) ++ ")"
+  | ReLispAtom(a, _) => "(atom " ++ printToString(a.contents) ++ ")"
   | ReLispError(s, _) => "ERROR: " ++ s
   | ReLispHashMap(h, _) =>
     "{" ++

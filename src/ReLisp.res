@@ -18,7 +18,7 @@ type rec t =
   | ReLispKeyword(string, option<t>)
   | ReLispVector(array<t>, option<t>)
   | ReLispFunction(f, bool, option<t>)
-  | ReLispAtom(t, option<t>)
+  | ReLispAtom(ref<t>, option<t>)
   | ReLispError(string, option<t>)
   | ReLispHashMap(hashmap, option<t>)
 and f = {

@@ -545,7 +545,7 @@ let atomFun = Function.fromBootstrap(elems => {
   let len = Belt.Array.length(elems)
 
   switch len {
-  | 1 => ReLispAtom(elems[0], None)
+  | 1 => ReLispAtom(ref(elems[0]), None)
   | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
   }
 })
@@ -569,19 +569,25 @@ let derefAtom = Function.fromBootstrap(elems => {
   switch len {
   | 1 =>
     switch elems[0] {
-    | ReLispAtom(e, _) => e
+    | ReLispAtom(e, _) => e.contents
     | e => ReLispError(`Unexpected type ${type_(e)}, expected atom`, None)
     }
   | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
   }
 })
 
-// Reset doesn't mutate the original atom as the language is immutable
 let resetFun = Function.fromBootstrap(elems => {
   let len = Belt.Array.length(elems)
 
   switch len {
-  | 2 => ReLispAtom(elems[1], None)
+  | 2 =>
+    switch elems[0] {
+    | ReLispAtom(r, _) => {
+        r := elems[1]
+        elems[0]
+      }
+    | e => ReLispError(`Unexpected type ${type_(e)}, expected atom`, None)
+    }
   | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
   }
 })
@@ -698,7 +704,7 @@ let applyFun = Function.fromBootstrap(elems =>
 
       switch elem->isSeq {
       | Some(list) => {
-          let args = elems->Js.Array2.slice(~start=0, ~end_=-1)->Js.Array2.concat(list)
+          let args = elems->Js.Array2.slice(~start=1, ~end_=-1)->Js.Array2.concat(list)
           f.fun(args)
         }
       | _ => ReLispError(`Unexpected type ${type_(elem)}, expected list or vector`, None)
