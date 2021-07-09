@@ -735,6 +735,8 @@ let applyFun = Function.fromBootstrap(elems =>
   }
 )
 
+let randFun = Function.fromBootstrap(_ => ReLispNumber(Js.Math.random(), None))
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -778,6 +780,7 @@ let stdlib = Js.Dict.fromArray([
   ("first", firstFun),
   ("rest", restFun),
   ("apply", applyFun),
+  ("rand", randFun),
   (
     "is-browser",
     Function.fromBootstrap(elems => {
