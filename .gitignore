@@ -34,3 +34,6 @@ lib/bs
 
 # Some random lispy lisp files
 *.relisp
+
+# Run file
+!run.mjs
