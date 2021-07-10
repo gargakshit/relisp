@@ -60,45 +60,45 @@ and evalReLisp = (ast, env) =>
             | ReLispSymbol("let*", _) => {
                 let letEnv = Env.new(Some(env), Js.Dict.empty())
 
-                let process = (arr, ast) => {
-                  let len = arr->Js.Array2.length
-
-                  if len == 0 {
-                    Error("No keys added")
-                  } else if len->mod(2) != 0 {
-                    Error("All keys don't have a value")
-                  } else {
-                    let chunks = Utils.chunk(arr, 2)
-
-                    let rec recursiveForEach = chunks =>
-                      switch Js.Array2.shift(chunks) {
-                      | None => evalReLisp(ast, letEnv)
-                      | Some(chunk) =>
-                        switch chunk[0] {
-                        | ReLispSymbol(symbol, _) =>
-                          switch evalReLisp(chunk[1], letEnv) {
-                          | Error(e) => Error(e)
-                          | Ok(evalVal) => {
-                              let _ = env->Env.set(symbol, evalVal)
-                              recursiveForEach(chunks)
-                            }
-                          }
-                        | _ => Error(`Invalid type ${type_(chunk[0])}, expected symbol`)
-                        }
-                      }
-
-                    recursiveForEach(chunks)
-                  }
-                }
-
                 switch list->Belt.Array.get(2) {
                 | None => Error("Unexpected syntax")
                 | Some(ast) =>
-                  switch list->Belt.Array.get(1) {
-                  | None => Error("Expected a list or vector, got nil")
-                  | Some(ReLispVector(arr, _)) => process(arr, ast)
-                  | Some(ReLispList(arr, _)) => process(arr, ast)
-                  | Some(e) => Error(`Invalid type ${type_(e)}, expected list or vector`)
+                  switch list[1]->isSeq {
+                  | None => Error(`Invalid type ${type_(list[1])}, expected list or vector`)
+                  | Some(arr) => {
+                      let len = arr->Js.Array2.length
+
+                      if len == 0 {
+                        Error("No keys added")
+                      } else if len->mod(2) != 0 {
+                        Error("All keys don't have a value")
+                      } else {
+                        let chunks = Utils.chunk(arr, 2)
+
+                        @inline
+                        let rec recursiveForEach = chunks =>
+                          switch Js.Array2.shift(chunks) {
+                          | None => Ok()
+                          | Some(chunk) =>
+                            switch chunk[0] {
+                            | ReLispSymbol(symbol, _) =>
+                              switch evalReLisp(chunk[1], letEnv) {
+                              | Error(e) => Error(e)
+                              | Ok(evalVal) => {
+                                  let _ = env->Env.set(symbol, evalVal)
+                                  recursiveForEach(chunks)
+                                }
+                              }
+                            | _ => Error(`Invalid type ${type_(chunk[0])}, expected symbol`)
+                            }
+                          }
+
+                        switch recursiveForEach(chunks) {
+                        | Error(e) => Error(e)
+                        | Ok(_) => evalReLisp(ast, letEnv)
+                        }
+                      }
+                    }
                   }
                 }
               }
