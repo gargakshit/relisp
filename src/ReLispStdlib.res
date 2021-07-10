@@ -756,6 +756,7 @@ let evalJsFun = Function.fromBootstrap(elems => {
           switch t {
           | "number" => ReLispNumber(result, None)
           | "string" => ReLispString(result, None)
+          | "conv" => result->Conv.jsToReLisp
           | _ => ReLispNil(None)
           }
         }
