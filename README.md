@@ -22,5 +22,5 @@ You can run a file using `node run.mjs file.relisp`.
     (reset! a (+ @a 1))
     (print @a)))
 
-(my-fun)
+(my-fun a)
 ```
