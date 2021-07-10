@@ -5,7 +5,7 @@
   "main": "src/index.bs.js",
   "repository": "https://github.com/gargakshit/relisp",
   "author": "Akshit Garg <garg.akshit@gmail.com>",
-  "license": "LGPL-3.0-or-later",
+  "license": "MIT",
   "private": false,
   "scripts": {
     "res:build": "rescript",
