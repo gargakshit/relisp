@@ -15,6 +15,12 @@ let isBrowser = () =>
   | _ => false
   }
 
+@inline
+let evalJs = code => {
+  let fun = %raw("(code) => eval(code)")
+  fun(code)
+}
+
 let addFun = Function.fromBootstrap(elems => ReLispNumber(
   elems->Belt.Array.reduce(0.0, (acc, el) =>
     switch el {
@@ -737,6 +743,30 @@ let applyFun = Function.fromBootstrap(elems =>
 
 let randFun = Function.fromBootstrap(_ => ReLispNumber(Js.Math.random(), None))
 
+let evalJsFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispKeyword(t, _) =>
+      switch elems[1] {
+      | ReLispString(s, _) => {
+          let result = evalJs(s)
+          switch t {
+          | "number" => ReLispNumber(result, None)
+          | "string" => ReLispString(result, None)
+          | _ => ReLispNil(None)
+          }
+        }
+      | elem => ReLispError(`Unexpected type ${type_(elem)}, expected keyword`, None)
+      }
+    | elem => ReLispError(`Unexpected type ${type_(elem)}, expected symbol`, None)
+    }
+  | _ => ReLispError(`Expected 2 arguments, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -781,6 +811,7 @@ let stdlib = Js.Dict.fromArray([
   ("rest", restFun),
   ("apply", applyFun),
   ("rand", randFun),
+  ("unsafe-eval-js", evalJsFun),
   (
     "is-browser",
     Function.fromBootstrap(elems => {
