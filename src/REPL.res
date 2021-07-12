@@ -25,11 +25,11 @@ let eval = (~env=initEnv(), ast) => ast->Eval.evalReLisp(env)
 
 let print = exp => Printer.printToString(exp)
 
-let rep = input =>
+let rep = (~env=initEnv(), input) =>
   switch read(input) {
   | Error(e) => Error(e)
   | Ok(ast) =>
-    switch eval(ast) {
+    switch eval(ast, ~env) {
     | Error(e) => Error(e)
     | Ok(result) => Ok(print(result))
     }
