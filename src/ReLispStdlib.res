@@ -768,6 +768,32 @@ let evalJsFun = Function.fromBootstrap(elems => {
   }
 })
 
+let substFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 3 =>
+    switch elems[2]->isSeq {
+    | Some(l) =>
+      switch elems[1] {
+      | ReLispNumber(i, _) => {
+          let i = Belt.Float.toInt(i)
+
+          if i < Belt.Array.length(l) {
+            l[i] = elems[0]
+            ReLispNil(None)
+          } else {
+            ReLispError(`${i->Belt.Int.toString} is out of bounds for the provided list`, None)
+          }
+        }
+      | elem => ReLispError(`Unexpected type ${type_(elem)}, expected number`, None)
+      }
+    | None => ReLispError(`Unexpected type ${type_(elems[2])}, expected list or symbol`, None)
+    }
+  | _ => ReLispError(`Expected 3 arguments, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -812,6 +838,7 @@ let stdlib = Js.Dict.fromArray([
   ("rest", restFun),
   ("apply", applyFun),
   ("rand", randFun),
+  ("subst", substFun),
   ("unsafe-eval-js", evalJsFun),
   (
     "is-browser",
