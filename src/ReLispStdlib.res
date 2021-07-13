@@ -794,6 +794,24 @@ let substFun = Function.fromBootstrap(elems => {
   }
 })
 
+let splitFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispString(str, None) =>
+      switch elems[1] {
+      | ReLispString(delim, None) =>
+        ReLispList(str->Js.String2.split(delim)->Js.Array2.map(e => ReLispString(e, None)), None)
+      | elem => ReLispError(`Unexpected type ${type_(elem)}, expected string`, None)
+      }
+    | elem => ReLispError(`Unexpected type ${type_(elem)}, expected string`, None)
+    }
+  | _ => ReLispError(`Expected 2 arguments, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -839,6 +857,7 @@ let stdlib = Js.Dict.fromArray([
   ("apply", applyFun),
   ("rand", randFun),
   ("subst", substFun),
+  ("split", splitFun),
   ("unsafe-eval-js", evalJsFun),
   (
     "is-browser",
