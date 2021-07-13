@@ -812,6 +812,19 @@ let splitFun = Function.fromBootstrap(elems => {
   }
 })
 
+let lengthFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 1 =>
+    switch elems[0]->isSeq {
+    | Some(l) => ReLispNumber(Belt.Array.length(l)->Belt.Int.toFloat, None)
+    | None => ReLispError(`Unexpected type ${type_(elems[0])}, expected list or symbol`, None)
+    }
+  | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let stdlib = Js.Dict.fromArray([
   ("+", addFun),
   ("-", subFun),
@@ -858,6 +871,7 @@ let stdlib = Js.Dict.fromArray([
   ("rand", randFun),
   ("subst", substFun),
   ("split", splitFun),
+  ("length", lengthFun),
   ("unsafe-eval-js", evalJsFun),
   (
     "is-browser",
