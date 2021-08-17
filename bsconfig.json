@@ -1,10 +1,17 @@
 {
   "name": "@relisp/interpreter",
   "version": "0.1.0",
-  "sources": {
-    "dir": "src",
-    "subdirs": true
-  },
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    },
+    {
+      "dir": "tests",
+      "subdirs": true,
+      "type": "dev"
+    }
+  ],
   "package-specs": [
     {
       "module": "es6",
@@ -13,5 +20,5 @@
   ],
   "suffix": ".mjs",
   "bs-dependencies": [],
-  "bs-dev-dependencies": []
+  "bs-dev-dependencies": ["@dusty-phillips/rescript-zora"]
 }

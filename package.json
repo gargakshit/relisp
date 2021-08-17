@@ -9,9 +9,13 @@
   "private": false,
   "scripts": {
     "res:build": "rescript",
-    "res:start": "rescript build -w"
+    "res:start": "rescript build -w",
+    "test": "pta 'tests/*.test.mjs' # Currently doesn't work, please use npx pta or yarn pta"
   },
   "devDependencies": {
-    "rescript": "^9.1.4"
+    "@dusty-phillips/rescript-zora": "^2.0.0",
+    "pta": "^1.0.0",
+    "rescript": "^9.1.4",
+    "zora": "^5.0.0"
   }
 }
