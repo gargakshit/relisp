@@ -1,4 +1,4 @@
-open ReLisp
+open ReLisp__Types
 
 @send
 external replaceWithFun: (string, Js.Re.t, (string, string) => string) => string = "replace"

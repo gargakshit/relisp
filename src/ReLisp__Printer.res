@@ -1,4 +1,4 @@
-open ReLisp
+open ReLisp__Types
 
 let rec printToString = input =>
   switch input {

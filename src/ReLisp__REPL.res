@@ -1,16 +1,16 @@
-let read = input => Reader.readStr(input)
+let read = input => ReLisp__Reader.readStr(input)
 
 let initEnv = () => {
-  let env = ReLisp.Env.new(None, ReLispStdlib.stdlib)
-  let _ = env->ReLisp.Env.set(
+  let env = ReLisp__Types.Env.new(None, ReLisp__Stdlib.stdlib)
+  let _ = env->ReLisp__Types.Env.set(
     "eval",
-    ReLisp.Function.fromBootstrap(elems => {
+    ReLisp__Types.Function.fromBootstrap(elems => {
       let len = Belt.Array.length(elems)
 
       switch len {
       | 1 =>
-        switch Eval.evalReLisp(elems[0], env) {
-        | Error(e) => ReLisp.ReLispError(e, None)
+        switch ReLisp__Eval.evalReLisp(elems[0], env) {
+        | Error(e) => ReLisp__Types.ReLispError(e, None)
         | Ok(e) => e
         }
       | _ => ReLispError(`Expected 1 argument, got ${len->Belt.Int.toString}`, None)
@@ -21,9 +21,9 @@ let initEnv = () => {
   env
 }
 
-let eval = (~env=initEnv(), ast) => ast->Eval.evalReLisp(env)
+let eval = (~env=initEnv(), ast) => ast->ReLisp__Eval.evalReLisp(env)
 
-let print = exp => Printer.printToString(exp)
+let print = exp => ReLisp__Printer.printToString(exp)
 
 let rep = (~env=initEnv(), input) =>
   switch read(input) {

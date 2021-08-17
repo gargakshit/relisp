@@ -1,4 +1,4 @@
-open ReLisp
+open ReLisp__Types
 
 @inline external identity: 'a => 'b = "%identity"
 

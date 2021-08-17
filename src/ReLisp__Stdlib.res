@@ -1,4 +1,4 @@
-open ReLisp
+open ReLisp__Types
 
 @inline
 let isSeq = val =>
@@ -263,12 +263,12 @@ let isMacro = Function.fromBootstrap(elems => {
 })
 
 let strFun = Function.fromBootstrap(elems => ReLispString(
-  elems->Belt.Array.map(Printer.printToString)->Js.Array2.joinWith(""),
+  elems->Belt.Array.map(ReLisp__Printer.printToString)->Js.Array2.joinWith(""),
   None,
 ))
 
 let printFun = Function.fromBootstrap(elems => {
-  Js.Console.log(elems->Belt.Array.map(Printer.printToString)->Js.Array2.joinWith(" "))
+  Js.Console.log(elems->Belt.Array.map(ReLisp__Printer.printToString)->Js.Array2.joinWith(" "))
   ReLispNil(None)
 })
 
@@ -507,7 +507,7 @@ let readStringFun = Function.fromBootstrap(elems => {
   | 1 =>
     switch elems[0] {
     | ReLispString(str, _) =>
-      switch Reader.readStr(str) {
+      switch ReLisp__Reader.readStr(str) {
       | Error(e) => ReLispError(e, None)
       | Ok(e) => e
       }
@@ -756,7 +756,7 @@ let evalJsFun = Function.fromBootstrap(elems => {
           switch t {
           | "number" => ReLispNumber(result, None)
           | "string" => ReLispString(result, None)
-          | "conv" => result->Conv.jsToReLisp
+          | "conv" => result->ReLisp__Conv.jsToReLisp
           | _ => ReLispNil(None)
           }
         }

@@ -1,4 +1,4 @@
-open ReLisp
+open ReLisp__Types
 
 @inline
 let isSeq = val =>
@@ -73,7 +73,7 @@ and evalReLisp = (ast, env) =>
                       } else if len->mod(2) != 0 {
                         Error("All keys don't have a value")
                       } else {
-                        let chunks = Utils.chunk(arr, 2)
+                        let chunks = ReLisp__Utils.chunk(arr, 2)
 
                         @inline
                         let rec recursiveForEach = chunks =>
@@ -234,7 +234,8 @@ and evalReLisp = (ast, env) =>
                       )
                     }
                   // | Some(other) => Ok(ReLispList([other]->Js.Array2.concat(list), None))
-                  | Some(other) => Error(`Undefined function ${Printer.printToString(other)}`)
+                  | Some(other) =>
+                    Error(`Undefined function ${ReLisp__Printer.printToString(other)}`)
                   }
                 }
 

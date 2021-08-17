@@ -1,4 +1,4 @@
-import { repl } from "./src/REPL.mjs";
+import { repl } from "./src/ReLisp.mjs";
 
 if (process.argv.length === 3) {
   const fname = process.argv[2];
