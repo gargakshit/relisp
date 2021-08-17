@@ -19,7 +19,10 @@ let tokenize = input => {
           | None => tokens
           | Some(";") => recursiveTokenizer(tokens)
           | _ => {
-              let _ = tokens->Js.Array2.push(match)
+              if !(match->Js.String2.startsWith(";")) {
+                let _ = tokens->Js.Array2.push(match)
+              }
+
               recursiveTokenizer(tokens)
             }
           }
