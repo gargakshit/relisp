@@ -1,6 +1,7 @@
 # ReLisp
 
-A lisp ([mal](https://github.com/kanaka/mal)) dialect written in ReScript
+An experimental, unstable lisp ([mal](https://github.com/kanaka/mal)) dialect written in ReScript.
+**WARNING:** The code is a mess right now, but it works!
 
 ### Building
 
