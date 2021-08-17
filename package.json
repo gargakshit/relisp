@@ -10,10 +10,12 @@
   "scripts": {
     "res:build": "rescript",
     "res:start": "rescript build -w",
-    "test": "pta 'tests/*.test.mjs' # Currently doesn't work, please use npx pta or yarn pta"
+    "test:watch": "onchange --initial \"{tests,src}/*.mjs\" -- pta \"tests/*.test.mjs\"",
+    "test": "pta \"tests/*.test.mjs\""
   },
   "devDependencies": {
     "@dusty-phillips/rescript-zora": "^2.0.0",
+    "onchange": "^7.1.0",
     "pta": "^1.0.0",
     "rescript": "^9.1.4",
     "zora": "^5.0.0"
