@@ -47,11 +47,8 @@ let type_ = elem =>
   | ReLispSymbol(_, _) => "symbol"
   | ReLispKeyword(_, _) => "keyword"
   | ReLispVector(_, _) => "vector"
-  | ReLispFunction(_, macro, _) =>
-    switch macro {
-    | false => "function"
-    | true => "macro"
-    }
+  | ReLispFunction(_, true, _) => "macro"
+  | ReLispFunction(_, false, _) => "function"
   | ReLispAtom(_, _) => "atom"
   | ReLispError(_, _) => "error"
   | ReLispHashMap(_, _) => "hashmap"
