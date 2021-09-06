@@ -4,5 +4,6 @@ include ReLisp__Printer
 include ReLisp__Reader
 include ReLisp__REPL
 include ReLisp__Stdlib
+include ReLisp__TermRepl
 include ReLisp__Types
 include ReLisp__Utils

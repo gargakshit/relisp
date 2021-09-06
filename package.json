@@ -19,5 +19,8 @@
     "pta": "^1.0.0",
     "rescript": "^9.1.4",
     "zora": "^5.0.0"
+  },
+  "dependencies": {
+    "ansi-colors": "^4.1.1"
   }
 }

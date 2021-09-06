@@ -63,6 +63,12 @@ module Env = {
     value
   }
 
+  let rec allKeys = (env, acc) =>
+    switch env {
+    | None => acc
+    | Some(env) => allKeys(env.outer, acc->Js.Array2.concat(Js.Dict.keys(env.data)))
+    }
+
   let rec find = (env, key) =>
     switch env.data->Js.Dict.get(key) {
     | None =>

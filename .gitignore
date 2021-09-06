@@ -37,3 +37,9 @@ lib/bs
 
 # Run file
 !run.mjs
+
+# REPL executor
+!repl.mjs
+
+# Standard Library
+!stdlib.relisp

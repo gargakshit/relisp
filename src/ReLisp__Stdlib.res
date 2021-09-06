@@ -713,8 +713,8 @@ let restFun = Function.fromBootstrap(elems => {
       switch elems[0]->isSeq {
       | Some(list) =>
         switch Belt.Array.length(list) {
-        | 0 => ReLispNil(None)
-        | 1 => ReLispNil(None)
+        | 0 => ReLispList([], None)
+        | 1 => ReLispList([], None)
         | _ => ReLispList(list->Js.Array2.slice(~start=1, ~end_=list->Js.Array2.length), None)
         }
       | _ => ReLispError(`Unexpected type ${type_(elems[0])}, expected list or vector`, None)

@@ -34,65 +34,69 @@ let tokenize = input => {
   recursiveTokenizer([])
 }
 
-let rec readForm = tokens => {
-  let token = tokens[0]
+let rec readForm = tokens =>
+  switch tokens {
+  | [] => Ok(ReLispNil(None))
+  | tokens => {
+      let token = tokens[0]
 
-  let readSymbol = name => {
-    let _ = Js.Array2.shift(tokens)
+      let readSymbol = name => {
+        let _ = Js.Array2.shift(tokens)
 
-    let sym = ReLispSymbol(name, None)
+        let sym = ReLispSymbol(name, None)
 
-    switch readForm(tokens) {
-    | Error(e) => Error(e)
-    | Ok(target) => Ok(ReLispList([sym, target], None))
-    }
-  }
-
-  switch token {
-  | ")" => Error("Unexpected )")
-  | "(" =>
-    switch readParen(tokens, "(", ")") {
-    | Error(e) => Error(e)
-    | Ok(list) => Ok(ReLispList(list, None))
-    }
-  | "]" => Error("Unexpected ]")
-  | "[" =>
-    switch readParen(tokens, "[", "]") {
-    | Error(e) => Error(e)
-    | Ok(list) => Ok(ReLispVector(list, None))
-    }
-  | "}" => Error("Unexpected }")
-  | "{" =>
-    switch readParen(tokens, "{", "}") {
-    | Error(e) => Error(e)
-    | Ok(list) => HashMap.new(list)
-    }
-  | "'" => readSymbol("quote")
-  | "`" => readSymbol("quasiquote")
-  | "~" => readSymbol("unquote")
-  | "@" => readSymbol("deref")
-  | "~@" => readSymbol("splice-unquote")
-  | "^" => {
-      let _ = Js.Array2.shift(tokens)
-
-      let sym = ReLispSymbol("with-meta", None)
-
-      switch readForm(tokens) {
-      | Error(e) => Error(e)
-      | Ok(target) =>
         switch readForm(tokens) {
         | Error(e) => Error(e)
-        | Ok(target2) => Ok(ReLispList([sym, target2, target], None))
+        | Ok(target) => Ok(ReLispList([sym, target], None))
+        }
+      }
+
+      switch token {
+      | ")" => Error("Unexpected )")
+      | "(" =>
+        switch readParen(tokens, "(", ")") {
+        | Error(e) => Error(e)
+        | Ok(list) => Ok(ReLispList(list, None))
+        }
+      | "]" => Error("Unexpected ]")
+      | "[" =>
+        switch readParen(tokens, "[", "]") {
+        | Error(e) => Error(e)
+        | Ok(list) => Ok(ReLispVector(list, None))
+        }
+      | "}" => Error("Unexpected }")
+      | "{" =>
+        switch readParen(tokens, "{", "}") {
+        | Error(e) => Error(e)
+        | Ok(list) => HashMap.new(list)
+        }
+      | "'" => readSymbol("quote")
+      | "`" => readSymbol("quasiquote")
+      | "~" => readSymbol("unquote")
+      | "@" => readSymbol("deref")
+      | "~@" => readSymbol("splice-unquote")
+      | "^" => {
+          let _ = Js.Array2.shift(tokens)
+
+          let sym = ReLispSymbol("with-meta", None)
+
+          switch readForm(tokens) {
+          | Error(e) => Error(e)
+          | Ok(target) =>
+            switch readForm(tokens) {
+            | Error(e) => Error(e)
+            | Ok(target2) => Ok(ReLispList([sym, target2, target], None))
+            }
+          }
+        }
+      | _ =>
+        switch readAtom(tokens) {
+        | Error(e) => Error(e)
+        | Ok(atom) => Ok(atom)
         }
       }
     }
-  | _ =>
-    switch readAtom(tokens) {
-    | Error(e) => Error(e)
-    | Ok(atom) => Ok(atom)
-    }
   }
-}
 and readAtom = tokens => {
   let token = switch Js.Array2.shift(tokens) {
   | None => "1" // Should not happen I guess
