@@ -58,7 +58,7 @@ let start = () => {
           | ReLispKeyword("gray", None) => ReLispString(gray(str), None)
           | e => ReLispError("Unknown ANSI type " ++ print(e), None)
           }
-        | _ => ReLispError("String expected", None)
+        | e => ReLispError(`Invalid Type ${type_(e)}, expected string`, None)
         }
       | _ => ReLispError(`Expected 2 arguments, got ${len->Belt.Int.toString}`, None)
       }

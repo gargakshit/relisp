@@ -79,6 +79,23 @@ let divFun = Function.fromBootstrap(elems =>
 )
 // Not the most efficient, I know :)
 
+let modFun = Function.fromBootstrap(elems => {
+  let len = Belt.Array.length(elems)
+
+  switch len {
+  | 2 =>
+    switch elems[0] {
+    | ReLispNumber(a, _) =>
+      switch elems[1] {
+      | ReLispNumber(b, _) => ReLispNumber(mod_float(a, b), None)
+      | e => ReLispError(`Invalid type ${type_(e)}, expected number`, None)
+      }
+    | e => ReLispError(`Invalid type ${type_(e)}, expected number`, None)
+    }
+  | _ => ReLispError(`Expected 2 arguments, got ${len->Belt.Int.toString}`, None)
+  }
+})
+
 let errorFun = Function.fromBootstrap(elems => {
   let len = Belt.Array.length(elems)
 
@@ -88,7 +105,7 @@ let errorFun = Function.fromBootstrap(elems => {
       switch elems[0] {
       | ReLispString(s, _) => s
       | ReLispError(e, _) => e
-      | _ => `String or error expected`
+      | e => `Invalid type ${type_(e)}, expected string or error`
       },
       None,
     )
@@ -830,6 +847,7 @@ let stdlib = Js.Dict.fromArray([
   ("-", subFun),
   ("*", mulFun),
   ("/", divFun),
+  ("%", modFun),
   ("typeof", typeFun),
   ("error", errorFun),
   ("error?", isError),
